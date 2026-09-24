@@ -134,11 +134,7 @@
         <button class="btn" id="nansenBtn" type="button">手動更新 Nansen（1 credit）</button>
       </div>
     </div>
-    <div class="nansen-key">
-      <label for="nansenApiKey">Nansen API key</label>
-      <input id="nansenApiKey" type="password" autocomplete="off" spellcheck="false" placeholder="僅本頁記憶體使用，不會寫入 localStorage" />
-    </div>
-    <p class="tiny nansen-note" id="nansenStatus">尚未查詢。頁面載入與 Binance 自動更新都不會呼叫 Nansen。</p>
+    <p class="tiny nansen-note" id="nansenStatus">尚未查詢。API key 由 Cloudflare Secret 管理；頁面載入與 Binance 自動更新都不會呼叫 Nansen。</p>
     <div class="grid nansen-grid">
       <div class="nansen-flow"><div class="mini">Smart Money</div><div class="value neutral" id="nansenSmartFlow">--</div><div class="meta" id="nansenSmartMeta">尚未查詢</div></div>
       <div class="nansen-flow"><div class="mini">Top PnL Traders</div><div class="value neutral" id="nansenPnlFlow">--</div><div class="meta" id="nansenPnlMeta">尚未查詢</div></div>
@@ -154,7 +150,7 @@
 const $=id=>document.getElementById(id);
 const state={timer:null,last:null};
 const API={spot:'https://api.binance.com',fut:'https://fapi.binance.com'};
-const NANSEN={url:'https://api.nansen.ai/api/v1/tgm/flow-intelligence',chain:'solana',tokenAddress:'2zMMhcVQEXDtdE6vsFS7S7D5oUodfJHE8vd1gnBouauv',timeframe:'1d'};
+const NANSEN={url:'https://api.openpengu.com/flow-intelligence',chain:'solana',tokenAddress:'2zMMhcVQEXDtdE6vsFS7S7D5oUodfJHE8vd1gnBouauv',timeframe:'1d'};
 const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
 const num=v=>Number(v||0);
 const fmt=(v,d=6)=>num(v).toLocaleString('en-US',{minimumFractionDigits:d,maximumFractionDigits:d});
@@ -337,11 +333,10 @@ function renderNansen(payload){
   $('nansenStatus').textContent=`已更新 ${new Date().toLocaleString('zh-TW',{hour12:false})}｜本次使用 1 credit${warnings}`;
 }
 async function refreshNansen(){
-  const btn=$('nansenBtn'),key=$('nansenApiKey').value.trim();
-  if(!key){$('nansenStatus').textContent='請先輸入 Nansen API key；未發送任何 Nansen 請求。';$('nansenApiKey').focus();log('Nansen 查詢略過：缺少 API key','NANSEN');return}
+  const btn=$('nansenBtn');
   btn.disabled=true;btn.textContent='查詢中…';$('nansenStatus').textContent='查詢中… 本次操作將使用 1 credit。';
   try{
-    const payload=await jpost(NANSEN.url,{chain:NANSEN.chain,token_address:NANSEN.tokenAddress,timeframe:NANSEN.timeframe},{apikey:key});
+    const payload=await jpost(NANSEN.url,{chain:NANSEN.chain,token_address:NANSEN.tokenAddress,timeframe:NANSEN.timeframe});
     renderNansen(payload);log('Nansen Smart Flow 更新成功','NANSEN');
   }catch(e){$('nansenStatus').textContent=`Nansen 查詢失敗：${e.message}。未自動重試。`;log(`Nansen 更新失敗：${e.message}`,'NANSEN ERR')}
   finally{btn.disabled=false;btn.textContent='手動更新 Nansen（1 credit）'}

@@ -1,0 +1,83 @@
+const ALLOWED_ORIGINS = new Set([
+  "https://tokylin40.github.io",
+  "https://openpengu.com",
+  "https://www.openpengu.com",
+  "https://api.openpengu.com",
+  "https://pengu-radar.pages.dev",
+]);
+
+const NANSEN_URL = "https://api.nansen.ai/api/v1/tgm/flow-intelligence";
+const PENGU_TOKEN = "2zMMhcVQEXDtdE6vsFS7S7D5oUodfJHE8vd1gnBouauv";
+
+function corsHeaders(origin) {
+  const headers = {
+    "Access-Control-Allow-Methods": "POST, OPTIONS",
+    "Access-Control-Allow-Headers": "Content-Type",
+    "Cache-Control": "no-store",
+    Vary: "Origin",
+  };
+
+  if (ALLOWED_ORIGINS.has(origin)) {
+    headers["Access-Control-Allow-Origin"] = origin;
+  }
+
+  return headers;
+}
+
+function json(data, status, origin) {
+  return new Response(JSON.stringify(data), {
+    status,
+    headers: {
+      "Content-Type": "application/json; charset=utf-8",
+      ...corsHeaders(origin),
+    },
+  });
+}
+
+export async function onRequest(context) {
+  const { request, env } = context;
+  const origin = request.headers.get("Origin") || "";
+
+  if (!ALLOWED_ORIGINS.has(origin)) {
+    return json({ error: "Origin not allowed" }, 403, origin);
+  }
+
+  if (request.method === "OPTIONS") {
+    return new Response(null, { status: 204, headers: corsHeaders(origin) });
+  }
+
+  if (request.method !== "POST") {
+    return json({ error: "POST required" }, 405, origin);
+  }
+
+  if (!env.NANSEN_API_KEY) {
+    return json({ error: "NANSEN_API_KEY is not configured" }, 500, origin);
+  }
+
+  try {
+    const response = await fetch(NANSEN_URL, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        apikey: env.NANSEN_API_KEY,
+      },
+      body: JSON.stringify({
+        chain: "solana",
+        token_address: PENGU_TOKEN,
+        timeframe: "1d",
+      }),
+    });
+
+    const body = await response.text();
+
+    return new Response(body, {
+      status: response.status,
+      headers: {
+        "Content-Type": "application/json; charset=utf-8",
+        ...corsHeaders(origin),
+      },
+    });
+  } catch (error) {
+    return json({ error: "Nansen upstream request failed" }, 502, origin);
+  }
+}
