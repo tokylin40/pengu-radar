@@ -150,7 +150,7 @@
 const $=id=>document.getElementById(id);
 const state={timer:null,last:null};
 const API={spot:'https://api.binance.com',fut:'https://fapi.binance.com'};
-const NANSEN={url:'https://api.openpengu.com/flow-intelligence',chain:'solana',tokenAddress:'2zMMhcVQEXDtdE6vsFS7S7D5oUodfJHE8vd1gnBouauv',timeframe:'1d'};
+const NANSEN={url:location.hostname.endsWith('github.io')?'https://api.openpengu.com/flow-intelligence':'/flow-intelligence',chain:'solana',tokenAddress:'2zMMhcVQEXDtdE6vsFS7S7D5oUodfJHE8vd1gnBouauv',timeframe:'1d'};
 const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
 const num=v=>Number(v||0);
 const fmt=(v,d=6)=>num(v).toLocaleString('en-US',{minimumFractionDigits:d,maximumFractionDigits:d});

@@ -17,7 +17,7 @@ function corsHeaders(origin) {
     Vary: "Origin",
   };
 
-  if (ALLOWED_ORIGINS.has(origin)) {
+  if (origin && ALLOWED_ORIGINS.has(origin)) {
     headers["Access-Control-Allow-Origin"] = origin;
   }
 
@@ -34,11 +34,12 @@ function json(data, status, origin) {
   });
 }
 
-export async function onRequest(context) {
-  const { request, env } = context;
+async function flowIntelligence(request, env) {
   const origin = request.headers.get("Origin") || "";
+  const requestOrigin = new URL(request.url).origin;
+  const sameOrigin = !origin || origin === requestOrigin;
 
-  if (!ALLOWED_ORIGINS.has(origin)) {
+  if (!sameOrigin && !ALLOWED_ORIGINS.has(origin)) {
     return json({ error: "Origin not allowed" }, 403, origin);
   }
 
@@ -77,7 +78,19 @@ export async function onRequest(context) {
         ...corsHeaders(origin),
       },
     });
-  } catch (error) {
+  } catch {
     return json({ error: "Nansen upstream request failed" }, 502, origin);
   }
 }
+
+export default {
+  async fetch(request, env) {
+    const url = new URL(request.url);
+
+    if (url.pathname === "/flow-intelligence") {
+      return flowIntelligence(request, env);
+    }
+
+    return env.ASSETS.fetch(request);
+  },
+};
