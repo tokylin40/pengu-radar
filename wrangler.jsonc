@@ -10,7 +10,7 @@
   },
   "routes": [
     {
-      "pattern": "api.openpengu.com",
+      "pattern": "radar.openpengu.com",
       "custom_domain": true
     }
   ]

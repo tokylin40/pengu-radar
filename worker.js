@@ -2,6 +2,7 @@ const ALLOWED_ORIGINS = new Set([
   "https://tokylin40.github.io",
   "https://openpengu.com",
   "https://www.openpengu.com",
+  "https://radar.openpengu.com",
   "https://api.openpengu.com",
   "https://pengu-radar.pages.dev",
 ]);
@@ -92,7 +93,7 @@ export default {
         {
           ok: true,
           nansenConfigured: Boolean(env.NANSEN_API_KEY),
-          build: "health-check",
+          build: "github-build-2026-09-24",
         },
         200,
         request.headers.get("Origin") || "",
