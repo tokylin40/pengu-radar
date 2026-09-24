@@ -87,6 +87,18 @@ export default {
   async fetch(request, env) {
     const url = new URL(request.url);
 
+    if (url.pathname === "/health" && request.method === "GET") {
+      return json(
+        {
+          ok: true,
+          nansenConfigured: Boolean(env.NANSEN_API_KEY),
+          build: "health-check",
+        },
+        200,
+        request.headers.get("Origin") || "",
+      );
+    }
+
     if (url.pathname === "/flow-intelligence") {
       return flowIntelligence(request, env);
     }
